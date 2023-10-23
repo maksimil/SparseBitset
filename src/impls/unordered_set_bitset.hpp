@@ -19,4 +19,8 @@ public:
 
   const_iterator begin() const { return this->data.begin(); }
   const_iterator end() const { return this->data.end(); }
+
+  bool operator==(const UnorderedSetBitset &lhs) const {
+    return this->data == lhs.data;
+  }
 };
