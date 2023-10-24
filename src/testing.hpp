@@ -5,8 +5,10 @@
 #include <random>
 #include <vector>
 
-#define SET_TRIES 1000
+#define TRIES 1000
 #define SETS_PER_TRY 100
+#define UNSETS_PER_TRY 50
+
 #define RANDOM_POOL_SIZE 1000
 #define DIMENSION 2000
 
@@ -42,7 +44,8 @@ bool compare_implementation(const SparseBitset &bit_set,
     converted_bit_set.set(e);
   }
 
-  return compare_bit_set == converted_bit_set;
+  return compare_bit_set == converted_bit_set &&
+         compare_bit_set.size() == converted_bit_set.size();
 }
 
 template <class SparseBitset> void test_set() {
@@ -50,11 +53,10 @@ template <class SparseBitset> void test_set() {
   std::cout << COLOR_GREEN << "Setting " << SETS_PER_TRY << " elements"
             << COLOR_UNSET << "\n";
 
-  Benchmark insertion_benchmark;
+  Benchmark set_benchmark;
   Index passed_tests = 0;
 
-  for (Index try_count = 0; try_count < SET_TRIES; try_count++) {
-
+  for (Index try_count = 0; try_count < TRIES; try_count++) {
     RandomPool pool(DIMENSION);
 
     // testing
@@ -72,22 +74,74 @@ template <class SparseBitset> void test_set() {
     // benchmark
     {
       SparseBitset bit_set(DIMENSION);
-      insertion_benchmark.start();
+      set_benchmark.start();
       for (Index k = 0; k < SETS_PER_TRY; k++) {
         bit_set.set(pool.get(k));
       }
-      insertion_benchmark.end();
+      set_benchmark.end();
     }
   }
 
-  std::cout << "Passed " << passed_tests << "/" << SET_TRIES << " tests\n";
-  std::cout << "Average time: " << insertion_benchmark.average() << "mcs\n";
+  std::cout << "Passed " << passed_tests << "/" << TRIES << " tests\n";
+  std::cout << "Average time: " << set_benchmark.average() << "mcs\n";
   std::cout << "Average time per element: "
-            << (insertion_benchmark.average() / SETS_PER_TRY) << "mcs\n";
+            << (set_benchmark.average() / SETS_PER_TRY) << "mcs\n";
+}
+
+template <class SparseBitset> void test_unset() {
+  // Unset UNSET_PER_TRY values
+  std::cout << COLOR_GREEN << "Unsetting " << UNSETS_PER_TRY << " elements"
+            << COLOR_UNSET << "\n";
+
+  Benchmark unset_benchmark;
+  Index passed_tests = 0;
+
+  for (Index try_count = 0; try_count < TRIES; try_count++) {
+    RandomPool pool(DIMENSION);
+
+    // testing
+    {
+      SparseBitset bit_set(DIMENSION);
+      ComparisonImpl comparison_bit_set(DIMENSION);
+
+      for (Index k = 0; k < SETS_PER_TRY; k++) {
+        bit_set.set(pool.get(k));
+        comparison_bit_set.set(pool.get(k));
+      }
+
+      for (Index k = 0; k < UNSETS_PER_TRY; k++) {
+        bit_set.unset(pool.get(k));
+        comparison_bit_set.unset(pool.get(k));
+      }
+
+      passed_tests += compare_implementation(bit_set, comparison_bit_set);
+    }
+
+    // benchmark
+    {
+      SparseBitset bit_set(DIMENSION);
+
+      for (Index k = 0; k < SETS_PER_TRY; k++) {
+        bit_set.set(pool.get(k));
+      }
+
+      unset_benchmark.start();
+      for (Index k = 0; k < UNSETS_PER_TRY; k++) {
+        bit_set.unset(pool.get(k));
+      }
+      unset_benchmark.end();
+    }
+  }
+
+  std::cout << "Passed " << passed_tests << "/" << TRIES << " tests\n";
+  std::cout << "Average time: " << unset_benchmark.average() << "mcs\n";
+  std::cout << "Average time per element: "
+            << (unset_benchmark.average() / UNSETS_PER_TRY) << "mcs\n";
 }
 
 template <class SparseBitset> void test_implementation() {
   test_set<SparseBitset>();
+  test_unset<SparseBitset>();
 }
 
 #define TEST_IMPLEMENTATION(impl)                                              \
