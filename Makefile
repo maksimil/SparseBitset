@@ -9,29 +9,29 @@ ifndef verbose
 endif
 
 ifeq ($(config),debug)
-  SparseBitSet_config = debug
+  SparseBitset_config = debug
 
 else ifeq ($(config),release)
-  SparseBitSet_config = release
+  SparseBitset_config = release
 
 else
   $(error "invalid configuration $(config)")
 endif
 
-PROJECTS := SparseBitSet
+PROJECTS := SparseBitset
 
 .PHONY: all clean help $(PROJECTS) 
 
 all: $(PROJECTS)
 
-SparseBitSet:
-ifneq (,$(SparseBitSet_config))
-	@echo "==== Building SparseBitSet ($(SparseBitSet_config)) ===="
-	@${MAKE} --no-print-directory -C . -f SparseBitSet.make config=$(SparseBitSet_config)
+SparseBitset:
+ifneq (,$(SparseBitset_config))
+	@echo "==== Building SparseBitset ($(SparseBitset_config)) ===="
+	@${MAKE} --no-print-directory -C . -f SparseBitset.make config=$(SparseBitset_config)
 endif
 
 clean:
-	@${MAKE} --no-print-directory -C . -f SparseBitSet.make clean
+	@${MAKE} --no-print-directory -C . -f SparseBitset.make clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -43,6 +43,6 @@ help:
 	@echo "TARGETS:"
 	@echo "   all (default)"
 	@echo "   clean"
-	@echo "   SparseBitSet"
+	@echo "   SparseBitset"
 	@echo ""
 	@echo "For more information, see https://github.com/premake/premake-core/wiki"

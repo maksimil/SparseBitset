@@ -1,7 +1,7 @@
-workspace "SparseBitSet"
+workspace "SparseBitset"
    configurations { "Debug", "Release" }
 
-project "SparseBitSet"
+project "SparseBitset"
    kind "ConsoleApp"
    language "C++"
    files {"src/main.cpp"}
