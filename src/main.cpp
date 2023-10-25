@@ -1,3 +1,4 @@
+#include "auxillary/empty.hpp"
 #include "auxillary/static_bitset.hpp"
 #include "impls/set_bitset.hpp"
 #include "impls/unordered_set_bitset.hpp"
@@ -7,6 +8,7 @@
 int main(int argc, const char *argv[]) {
   TEST_IMPLEMENTATION(UnorderedSetBitset);
   TEST_IMPLEMENTATION(SetBitset);
+  TEST_IMPLEMENTATION(EmptyBitset);
   // StaticBitset works quicker than timer starting and stopping
   // TEST_IMPLEMENTATION(StaticBitset<256 COMMA Word8>);
 }

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "basic.hpp"
 #include "impls/unordered_set_bitset.hpp"
 #include "timer.hpp"

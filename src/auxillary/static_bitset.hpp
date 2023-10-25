@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../basic.hpp"
 #include <array>
 #include <cassert>
