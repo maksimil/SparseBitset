@@ -9,6 +9,7 @@ private:
 
 public:
   SetBitset(Index _dimension) {}
+  SetBitset() {}
 
   void set(Index index) { this->data.insert(index); }
   void unset(Index index) { this->data.erase(index); }

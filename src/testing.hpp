@@ -141,9 +141,68 @@ template <class SparseBitset> void test_unset() {
             << (unset_benchmark.average() / UNSETS_PER_TRY) << "mcs\n";
 }
 
+template <class SparseBitset> void test_iter() {
+  // Iterate over SETS_PER_TRY values
+  std::cout << COLOR_GREEN << "Iterating over " << SETS_PER_TRY << " elements"
+            << COLOR_UNSET << "\n";
+
+  Benchmark iterate_benchmark;
+  Index passed_tests = 0;
+
+  for (Index try_count = 0; try_count < TRIES; try_count++) {
+    RandomPool pool(DIMENSION);
+
+    // testing
+    {
+      SparseBitset bit_set(DIMENSION);
+      ComparisonImpl comparison_bit_set(DIMENSION);
+
+      for (Index k = 0; k < SETS_PER_TRY; k++) {
+        bit_set.set(pool.get(k));
+        comparison_bit_set.set(pool.get(k));
+      }
+
+      Index sum_impl = 0;
+      Index sum_compare = 0;
+
+      for (const Index &e : bit_set) {
+        sum_impl += e;
+      }
+
+      for (const Index &e : comparison_bit_set) {
+        sum_compare += e;
+      }
+
+      passed_tests += (sum_impl == sum_compare);
+    }
+
+    // benchmark
+    {
+      SparseBitset bit_set(DIMENSION);
+
+      for (Index k = 0; k < SETS_PER_TRY; k++) {
+        bit_set.set(pool.get(k));
+      }
+
+      iterate_benchmark.start();
+      Index sum = 0;
+      for (const Index &e : bit_set) {
+        sum += e;
+      }
+      iterate_benchmark.end();
+    }
+  }
+
+  std::cout << "Passed " << passed_tests << "/" << TRIES << " tests\n";
+  std::cout << "Average time: " << iterate_benchmark.average() << "mcs\n";
+  std::cout << "Average time per element: "
+            << (iterate_benchmark.average() / SETS_PER_TRY) << "mcs\n";
+}
+
 template <class SparseBitset> void test_implementation() {
   test_set<SparseBitset>();
   test_unset<SparseBitset>();
+  test_iter<SparseBitset>();
 }
 
 #define TEST_IMPLEMENTATION(impl)                                              \

@@ -13,105 +13,54 @@ using Word8 = std::uint8_t;
 using Word16 = std::uint16_t;
 using Word32 = std::uint32_t;
 using Word64 = std::uint64_t;
+using WordSize = std::uintptr_t;
 
-template <Index BLOCKS, class WordType> class StaticBitset {
+template <class WordType> class StaticBitset {
 private:
-  std::array<WordType, BLOCKS> data = {};
-  Index set_bits = 0;
+  WordType data = {};
 
 public:
-  static constexpr Index word_size = 8 * sizeof(WordType);
-  static constexpr Index capacity = word_size * BLOCKS;
+  static constexpr Index capacity = 8 * sizeof(WordType);
 
   StaticBitset() {}
 
-  StaticBitset(Index _dimension) {}
-
-  Index size() const { return this->set_bits; }
-
   bool get(Index index) const {
     assert(index >= 0 && index < capacity);
-    Index block_index = index / word_size;
-    Index inner_index = index % word_size;
-    WordType setword = WordType(1) << inner_index;
+    WordType setword = WordType(1) << index;
 
-    return (this->data[block_index] & setword) == setword;
+    return (this->data & setword) == setword;
   }
 
-  void set(Index index) {
+  bool set(Index index) {
     assert(index >= 0 && index < capacity);
-    Index block_index = index / word_size;
-    Index inner_index = index % word_size;
-    WordType setword = WordType(1) << inner_index;
+    WordType setword = WordType(1) << index;
 
-    this->set_bits += (this->data[block_index] & setword) == 0;
-    this->data[block_index] |= setword;
+    bool did_set = (this->data & setword) == 0;
+    this->data |= setword;
+
+    return did_set;
   }
 
-  void unset(Index index) {
-    assert(index >= 0 && index < word_size * BLOCKS);
-    Index block_index = index / word_size;
-    Index inner_index = index % word_size;
-    WordType setword = WordType(1) << inner_index;
+  bool unset(Index index) {
+    assert(index >= 0 && index < capacity);
+    WordType setword = WordType(1) << index;
 
-    this->set_bits -= (this->data[block_index] & setword) == setword;
-    this->data[block_index] &= ~setword;
+    bool did_unset = (this->data & setword) == setword;
+    this->data &= ~setword;
+
+    return did_unset;
   }
 
-  class Iterator {
-  private:
-    const StaticBitset<BLOCKS, WordType> &bitset;
-    Index index;
-
-    void move_to_next() {
-      while (this->index < capacity && !this->bitset.get(this->index)) {
-        this->index++;
-      }
+  Index move_to_next(Index from) const {
+    while (from < capacity && !this->get(from)) {
+      from++;
     }
-
-  public:
-    void move_end() { this->index = word_size * BLOCKS; }
-
-    Iterator(const StaticBitset<BLOCKS, WordType> &bitset) : bitset(bitset) {
-      this->index = 0;
-      this->move_to_next();
-    }
-
-    const Index &operator*() const { return this->index; }
-
-    Iterator &operator++() {
-      this->index++;
-      this->move_to_next();
-      return *this;
-    }
-
-    friend bool operator!=(const Iterator &lhs, const Iterator &rhs) {
-      return lhs.index != rhs.index;
-    }
-  };
-
-  using const_iterator = Iterator;
-
-  const_iterator begin() const { return Iterator(*this); }
-
-  const_iterator end() const {
-    Iterator iter = Iterator(*this);
-    iter.move_end();
-    return iter;
+    return from;
   }
 
-  std::ostream &print(std::ostream &out) const {
-    out << "[ ";
-    for (const WordType &b : this->data) {
-      out << +b << " ";
-    }
-    out << "]:" << this->set_bits;
+  friend std::ostream &operator<<(std::ostream &out,
+                                  const StaticBitset<WordType> &v) {
+    out << "[ " << (+v.data) << " ]";
     return out;
   }
 };
-
-template <Index BLOCKS, class WordType>
-std::ostream &operator<<(std::ostream &out,
-                         const StaticBitset<BLOCKS, WordType> &v) {
-  return v.print(out);
-}
